@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-LTS_VERSION="8"
+LTS_VERSION="10"
 NODE_VERSION=$( node --version )
 NODE_VERSION_WITHOUT_V=$( echo $NODE_VERSION | cut -c2-10 )
 COMMIT=$( node scripts/details.js COMMIT )
@@ -69,36 +69,6 @@ function compile {
 
     echo "Generating meta.json"
     node scripts/details.js META
-
-    echo -e "Preparing node"
-    mkdir -p nexe_node/node/$NODE_VERSION_WITHOUT_V
-    cd nexe_node/node/$NODE_VERSION_WITHOUT_V
-    rm -rf node-$NODE_VERSION_WITHOUT_V
-    if [ ! -f node-$NODE_VERSION_WITHOUT_V.tar.gz ]; then
-        echo -e "\tDownloading node src"
-        curl -o node-$NODE_VERSION_WITHOUT_V.tar.gz https://nodejs.org/dist/v$NODE_VERSION_WITHOUT_V/node-v$NODE_VERSION_WITHOUT_V.tar.gz
-    fi
-
-    echo -e "\tUnpacking node"
-    tar -xzf node-$NODE_VERSION_WITHOUT_V.tar.gz
-    cd -
-
-    if [ $OS = "win32" ]; then
-        echo "Windows icon"
-
-        NAME=$PACKAGE_VERSION
-
-        echo -e "\tPatch the window executable icon and details"
-        cp scripts/resources/node.rc $NODE_SOURCE/src/res/node.rc
-        cp scripts/resources/deepstream.ico $NODE_SOURCE/src/res/deepstream.ico
-
-        if ! [[ $PACKAGE_VERSION =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]]; then
-            echo -e "\tVersion can't contain characters in MSBuild, so replacing $PACKAGE_VERSION with 0.0.0"
-            NAME="0.0.0"
-        fi
-
-        sed -i "s/DEEPSTREAM_VERSION/$NAME/" $NODE_SOURCE/src/res/node.rc
-    fi
 
     # Nexe Patches
     echo "Nexe Patches for Browserify, copying stub versions of optional installs since they aern't bundled anyway"
