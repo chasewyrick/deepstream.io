@@ -6,6 +6,7 @@ const messageBuilder = require('../message-builder')
 const events = require('events')
 const http = require('http')
 const https = require('https')
+
 const OPEN = 'OPEN'
 
 /**
@@ -35,22 +36,18 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
   }
 
   addHTTPListeners () {
-
   }
 
   createWebsocketServer () {
   }
 
-  createWebsocketWrapper () {
-
-  }
-
   closeWebsocketServer () {
-
   }
 
-  closeWebsocketWrapper () {
+  createWebsocketWrapper () {
+  }
 
+  onSocketWrapperClosed () {
   }
 
   /**
@@ -108,13 +105,13 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
     this._urlPath = this._getOption('urlPath')
     this._unauthenticatedClientTimeout = this._getOption('unauthenticatedClientTimeout')
 
-    this._httpServer = this.createHttpServer();
+    this._httpServer = this.createHttpServer()
     this._httpServer.on('request', this._handleHealthCheck.bind(this))
     this._httpServer.once('listening', this._onReady.bind(this))
     this._httpServer.on('error', this._onError.bind(this))
-    this.addHTTPListeners(this._httpServer);
+    this.addHTTPListeners(this._httpServer)
 
-    this.websocketServer = this.createWebsocketServer();
+    this.websocketServer = this.createWebsocketServer()
 
     this._httpServer.listen(this._getOption('port'), this._getOption('host'))
   }
@@ -246,8 +243,7 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
    * @private
    * @returns {void}
    */
-  _onConnection (socket, upgradeReq) {
-    const socketWrapper = this.createWebsocketWrapper(socket, upgradeReq)
+  _onConnection (socketWrapper) {
     const handshakeData = socketWrapper.getHandshakeData()
     this._logger.info(
       C.EVENT.INCOMING_CONNECTION,
@@ -271,8 +267,8 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
 
     socketWrapper.sendMessage(C.TOPIC.CONNECTION, C.ACTIONS.CHALLENGE)
     socketWrapper.onMessage = this._processConnectionMessage.bind(this, socketWrapper)
-    socketWrapper._websocket.on('message', message => socketWrapper.onMessage(message))
-    socketWrapper._websocket.on('close', this._onSocketClose.bind(this, socketWrapper))
+    socketWrapper.socket.on('message', message => socketWrapper.onMessage(message))
+    socketWrapper.socket.on('close', this._onSocketClose.bind(this, socketWrapper))
   }
 
   /**
@@ -434,7 +430,6 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
    */
   _registerAuthenticatedSocket (socketWrapper, userData) {
     delete socketWrapper.authCallBack
-    socketWrapper.once('close', this._onSocketClose.bind(this, socketWrapper))
     socketWrapper.onMessage = (message) => {
       const parsedMessages = messageParser.parse(message)
       this.onMessages(socketWrapper, parsedMessages)
@@ -581,11 +576,12 @@ module.exports = class ConnectionEndpoint extends events.EventEmitter {
 
     this._authenticatedSockets.delete(socketWrapper)
     this._scheduledSocketWrapperWrites.delete(socketWrapper)
-    this.closeWebsocketWrapper(socketWrapper)
 
     if (socketWrapper.user !== OPEN) {
       this.emit('client-disconnected', socketWrapper)
     }
+
+    this.onSocketWrapperClosed(socketWrapper)
   }
 
   /**

@@ -1,6 +1,6 @@
 'use strict'
 
-const ConnectionEndpoint = require('../websocket/connection-endpoint');
+const ConnectionEndpoint = require('../websocket/connection-endpoint')
 const C = require('../../constants/constants')
 
 const SocketWrapper = require('./socket-wrapper')
@@ -24,7 +24,7 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
   constructor (options) {
     super(options)
     this.description = 'µWebSocket Connection Endpoint'
-    this.onMessages = this.onMessages.bind(this);
+    this.onMessages = this.onMessages.bind(this)
   }
 
   /**
@@ -39,9 +39,11 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
       noDelay: this._getOption('noDelay'),
       perMessageDeflate: this._getOption('perMessageDeflate'),
       maxPayload: this._getOption('maxMessageSize')
-    });
+    })
 
-    wss.on('connection', this._onConnection.bind(this))
+    wss.on('connection', (socket, upgradeReq) => {
+      this._onConnection(this.createWebsocketWrapper(socket, upgradeReq))
+    })
     wss.startAutoPing(
       this._getOption('heartbeatInterval'),
       messageBuilder.getMsg(C.TOPIC.CONNECTION, C.ACTIONS.PING)
@@ -73,10 +75,10 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
     const socketWrapper = new SocketWrapper(
       websocket, handshakeData, this._logger, this._options, this
     )
-    return socketWrapper;
+    return socketWrapper
   }
 
-  closeWebsocketWrapper (socketWrapper) {
-    // socketWrapper.terminate()
+  onSocketWrapperClosed (socketWrapper) {
+    socketWrapper.close()
   }
 }

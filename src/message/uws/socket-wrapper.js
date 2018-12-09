@@ -32,7 +32,7 @@ class UwsSocketWrapper extends EventEmitter {
     this.authAttempts = 0
     this.setMaxListeners(0)
     this.uuid = Math.random()
-    this._websocket = websocket
+    this.socket = websocket
     this._handshakeData = handshakeData
     this._external = websocket.external
 
@@ -66,7 +66,7 @@ class UwsSocketWrapper extends EventEmitter {
    */
   sendPrepared (preparedMessage) {
     this.flush()
-    if (this._websocket.readyState) {
+    if (this.socket.readyState) {
       uws.native.server.sendPrepared(this._external, preparedMessage)
     }
   }
@@ -94,10 +94,10 @@ class UwsSocketWrapper extends EventEmitter {
    */
   sendNative (message, allowBuffering) {
     if (this._config.outgoingBufferTimeout === 0) {
-      this._websocket.send(message)
+      this.socket.send(message)
     } else if (!allowBuffering) {
       this.flush()
-      this._websocket.send(message)
+      this.socket.send(message)
     } else {
       this._bufferedWrites += message
       this._connectionEndpoint.scheduleFlush(this)
@@ -111,7 +111,7 @@ class UwsSocketWrapper extends EventEmitter {
    */
   flush () {
     if (this._bufferedWrites !== '') {
-      this._websocket.send(this._bufferedWrites)
+      this.socket.send(this._bufferedWrites)
       this._bufferedWrites = ''
     }
   }
