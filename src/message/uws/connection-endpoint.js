@@ -1,11 +1,10 @@
 'use strict'
 
+const fileUtils = require('../../config/file-utils')
 const ConnectionEndpoint = require('../websocket/connection-endpoint')
 const C = require('../../constants/constants')
 
 const SocketWrapper = require('./socket-wrapper')
-const Server = require('uws').Server
-
 const messageBuilder = require('../message-builder')
 
 /**
@@ -34,12 +33,17 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
      * @returns {void}
      */
   createWebsocketServer () {
-    const wss = new Server({
-      server: this._httpServer,
-      noDelay: this._getOption('noDelay'),
-      perMessageDeflate: this._getOption('perMessageDeflate'),
-      maxPayload: this._getOption('maxMessageSize')
-    })
+      // nexe needs *global.require* for __dynamic__ modules
+      // but browserify and proxyquire can't handle *global.require*
+      const req = global && global.require ? global.require : require
+      const Server = req(fileUtils.lookupLibRequirePath('uws')).Server
+
+      const wss = new Server({
+          server: this._httpServer,
+          noDelay: this._getOption('noDelay'),
+          perMessageDeflate: this._getOption('perMessageDeflate'),
+          maxPayload: this._getOption('maxMessageSize')
+        })
 
     wss.on('connection', (socket, upgradeReq) => {
       this._onConnection(this.createWebsocketWrapper(socket, upgradeReq))

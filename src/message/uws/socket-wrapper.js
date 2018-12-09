@@ -1,8 +1,9 @@
 'use strict'
 
+const fileUtils = require('../../config/file-utils')
+
 const C = require('../../constants/constants')
 const messageBuilder = require('../message-builder')
-const uws = require('uws')
 
 const EventEmitter = require('events').EventEmitter
 
@@ -25,6 +26,10 @@ class UwsSocketWrapper extends EventEmitter {
 
   constructor (websocket, handshakeData, logger, config, connectionEndpoint) {
     super()
+
+    const req = global && global.require ? global.require : require
+    this.uws = req(fileUtils.lookupLibRequirePath('uws'))
+
     this.isClosed = false
     this._logger = logger
     this.user = null
@@ -52,7 +57,7 @@ class UwsSocketWrapper extends EventEmitter {
   // eslint-disable-next-line class-methods-use-this
   prepareMessage (message) {
     UwsSocketWrapper.lastPreparedMessage = message
-    return uws.native.server.prepareMessage(message, uws.OPCODE_TEXT)
+    return this.uws.native.server.prepareMessage(message, this.uws.OPCODE_TEXT)
   }
 
   /**
@@ -67,7 +72,7 @@ class UwsSocketWrapper extends EventEmitter {
   sendPrepared (preparedMessage) {
     this.flush()
     if (this.socket.readyState) {
-      uws.native.server.sendPrepared(this._external, preparedMessage)
+      this.uws.native.server.sendPrepared(this._external, preparedMessage)
     }
   }
 
@@ -81,7 +86,7 @@ class UwsSocketWrapper extends EventEmitter {
    */
   // eslint-disable-next-line class-methods-use-this
   finalizeMessage (preparedMessage) {
-    uws.native.server.finalizeMessage(preparedMessage)
+    this.uws.native.server.finalizeMessage(preparedMessage)
   }
 
   /**
