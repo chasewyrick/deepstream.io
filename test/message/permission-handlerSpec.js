@@ -3,7 +3,6 @@
 'use strict'
 
 const proxyquire = require('proxyquire').noPreserveCache()
-const uwsMock = require('../mocks/uws-mock')
 const HttpMock = require('../mocks/http-mock')
 const LoggerMock = require('../mocks/logger-mock')
 const httpMock = new HttpMock()
@@ -40,7 +39,8 @@ const options = {
   authenticationHandler: permissionHandler,
   logger: new LoggerMock(),
   maxAuthAttempts: 3,
-  logInvalidAuthData: true
+  logInvalidAuthData: true,
+  unauthenticatedClientTimeout: 100
 }
 
 const mockDs = {
@@ -59,7 +59,6 @@ describe('permissionHandler passes additional user meta data', () => {
       socketWrapperMock = new SocketWrapperMock(new SocketMock())
       connectionEndpoint._onConnection(socketWrapperMock)
       socketWrapperMock.onMessage(_msg('C|CHR|localhost:6021+'))
-
       done()
     })
   })

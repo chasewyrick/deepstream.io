@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-LTS_VERSION="6.14"
+LTS_VERSION="8"
 NODE_VERSION=$( node --version )
 NODE_VERSION_WITHOUT_V=$( echo $NODE_VERSION | cut -c2-10 )
 COMMIT=$( node scripts/details.js COMMIT )
@@ -90,7 +90,7 @@ function compile {
 
     echo -e "\t\tDownloading UWS"
     rm -rf nexe_node/uWebSockets
-    git clone https://github.com/uNetworking/uWebSockets-bindings.git nexe_node/uWebSockets
+    git clone https://github.com/elementengineering/uWebSockets-bindings.git nexe_node/uWebSockets
     cd nexe_node/uWebSockets
     git checkout $UWS_COMMIT
     git submodule update --init
@@ -104,12 +104,11 @@ function compile {
     if [ $OS = "darwin" ]; then
         echo -e "\t\tapplying patches only tested on darwin node v6.9.1"
         sed -i '' "s@'library_files': \[@'library_files': \[ 'lib\/uws.js',@" $NODE_SOURCE/node.gyp
-        sed -i '' "s@'src/debug-agent.cc',@'src\/debug-agent.cc',$C_FILE_NAMES@" $NODE_SOURCE/node.gyp
+        sed -i '' "s@'src/async-wrap.cc',@'src\/async-wrap.cc',$C_FILE_NAMES@" $NODE_SOURCE/node.gyp
         sed -i '' "s@'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x',  # -std=gnu++0x@'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x', 'CLANG_CXX_LIBRARY': 'libc++',@" $NODE_SOURCE/common.gypi
-        sed -i '' "14,18d" $NODE_SOURCE/src/util.h
     else
         sed -i "s/'library_files': \[/'library_files': \[\n      'lib\/uws.js',/" $NODE_SOURCE/node.gyp
-        sed -i "s@'src/debug-agent.cc',@'src/debug-agent.cc',\n  $C_FILE_NAMES@" $NODE_SOURCE/node.gyp
+        sed -i "s@'src/async-wrap.cc',@'src/async-wrap.cc',\n  $C_FILE_NAMES@" $NODE_SOURCE/node.gyp
         sed -i "s@'deps/uv/src/ares',@'deps/uv/src/ares',\n  $EXTRA_INCLUDES@" $NODE_SOURCE/node.gyp
         sed -i "s/'cflags': \[ '-g', '-O0' \],/'cflags': [ '-g', '-O0', '-DUSE_LIBUV' ],/" $NODE_SOURCE/common.gypi
         sed -i "s/} catch (e) {/} catch (e) { console.log( e );/" $UWS_SOURCE/nodejs/src/uws.js
@@ -175,8 +174,8 @@ function compile {
     PROC_ID=$!
     SECONDS=0;
     while kill -0 "$PROC_ID" >/dev/null 2>&1; do
-        echo -ne "\rCompiling deepstream... ($SECONDS SECONDS)"
-        sleep 1
+        echo -ne "\rCompiling deepstream... ($SECONDS)"
+        sleep 10
     done
 
     echo ""

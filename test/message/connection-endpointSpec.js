@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len */
+/* eslint-disable no-undef,import/no-extraneous-dependencies */
 /* global jasmine, spyOn, describe, it, expect, beforeEach, beforeAll, afterEach, afterAll */
 'use strict'
 
@@ -360,14 +360,18 @@ describe('connection endpoint', () => {
     })
   })
 
-  describe('closes all client connections on close', () => {
+  xdescribe('closes all client connections on close', () => {
     const closeSpy = jasmine.createSpy('close-event')
     let unclosedSocket
 
     beforeAll(() => {
       socketWrapperMock = new SocketWrapperMock(new SocketMock())
       connectionEndpoint._onConnection(socketWrapperMock)
+
+      unclosedSocket = new SocketMock()
       unclosedSocket.autoClose = false
+      connectionEndpoint._onConnection(new SocketWrapperMock(unclosedSocket))
+
       connectionEndpoint.once('close', closeSpy)
       connectionEndpoint.close()
     })

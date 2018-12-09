@@ -27,12 +27,12 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
     this.onMessages = this.onMessages.bind(this)
   }
 
-  /**
-   * Initialize the uws endpoint, setup callbacks etc.
-   *
-   * @private
-   * @returns {void}
-   */
+    /**
+     * Initialize the uws endpoint, setup callbacks etc.
+     *
+     * @private
+     * @returns {void}
+     */
   createWebsocketServer () {
     const wss = new Server({
       server: this._httpServer,
@@ -45,9 +45,9 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
       this._onConnection(this.createWebsocketWrapper(socket, upgradeReq))
     })
     wss.startAutoPing(
-      this._getOption('heartbeatInterval'),
-      messageBuilder.getMsg(C.TOPIC.CONNECTION, C.ACTIONS.PING)
-    )
+            this._getOption('heartbeatInterval'),
+            messageBuilder.getMsg(C.TOPIC.CONNECTION, C.ACTIONS.PING)
+        )
 
     return wss
   }
@@ -56,16 +56,16 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
     this.websocketServer.close()
   }
 
-  /**
-   * Receives a connected socket, wraps it in a SocketWrapper, sends a connection ack to the user
-   * and subscribes to authentication messages.
-   * @param {Websocket} socket
-   *
-   * @param {WebSocket} external    uws native websocket
-   *
-   * @private
-   * @returns {void}
-   */
+    /**
+     * Receives a connected socket, wraps it in a SocketWrapper, sends a connection ack to the user
+     * and subscribes to authentication messages.
+     * @param {Websocket} socket
+     *
+     * @param {WebSocket} external    uws native websocket
+     *
+     * @private
+     * @returns {void}
+     */
   createWebsocketWrapper (websocket, upgradeReq) {
     const handshakeData = {
       remoteAddress: websocket._socket.remoteAddress,
@@ -73,8 +73,8 @@ module.exports = class UWSConnectionEndpoint extends ConnectionEndpoint {
       referer: upgradeReq.headers.referer
     }
     const socketWrapper = new SocketWrapper(
-      websocket, handshakeData, this._logger, this._options, this
-    )
+            websocket, handshakeData, this._logger, this._options, this
+        )
     return socketWrapper
   }
 
