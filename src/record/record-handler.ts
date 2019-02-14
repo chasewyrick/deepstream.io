@@ -526,8 +526,8 @@ function onPermissionResponse (
   }
 }
 
-function onRequestError (event: RA, errorMessage, recordName: string, socket: SocketWrapper, message: Message) {
-  socket.sendMessage({
+function onRequestError (event: RA, errorMessage, recordName: string, socketWrapper: SocketWrapper, message: Message) {
+  socketWrapper.sendMessage({
     topic: TOPIC.RECORD,
     action: event,
     originalAction: message.action,
@@ -535,11 +535,11 @@ function onRequestError (event: RA, errorMessage, recordName: string, socket: So
   })
 }
 
-function onSnapshotComplete (recordName, version, data, socket: SocketWrapper, message: Message) {
+function onSnapshotComplete (recordName, version, data, socketWrapper: SocketWrapper, message: Message) {
   if (data) {
-    sendRecord(recordName, version, data, socket)
+    sendRecord(recordName, version, data, socketWrapper)
   } else {
-    socket.sendMessage({
+    socketWrapper.sendMessage({
       topic: TOPIC.RECORD,
       action: RA.RECORD_NOT_FOUND,
       originalAction: message.action,

@@ -1,5 +1,5 @@
 import { TOPIC, ALL_ACTIONS, CONNECTION_ACTIONS, AUTH_ACTIONS, EVENT, PARSER_ACTIONS, ParseResult, Message } from '../../constants'
-import * as messageBuilder from '../../../binary-protocol/src/message-builder'
+import * as messageBuilder from '../../../text-protocol/src/message-builder'
 import { UwsSocketWrapper, createSocketWrapper } from './socket-wrapper-factory'
 import { EventEmitter } from 'events'
 import * as https from 'https'
@@ -41,7 +41,7 @@ export default class UWSConnectionEndpoint extends EventEmitter implements Conne
   private serverGroup: any
   private scheduledSocketWrapperWrites: Set<SocketWrapper>
   private upgradeRequest: any
-  private pingMessage: Buffer
+  private pingMessage: Buffer | string
   private pingInterval: number
 
   constructor (private options: any, private services: DeepstreamServices) {
@@ -190,7 +190,7 @@ export default class UWSConnectionEndpoint extends EventEmitter implements Conne
     )
 
     this.pingInterval = setInterval(() => {
-      uws.native.server.group.broadcast(this.serverGroup, this.pingMessage, true)
+      uws.native.server.group.broadcast(this.serverGroup, this.pingMessage, false)
     }, this._getOption('heartbeatInterval'))
   }
 
@@ -375,7 +375,12 @@ export default class UWSConnectionEndpoint extends EventEmitter implements Conne
       socketWrapper,
       disconnectTimer
     )
-    socketWrapper.onMessage = this._processConnectionMessage.bind(this, socketWrapper)
+    socketWrapper.onMessage = this._authenticateConnection.bind(this, socketWrapper, null)
+
+    socketWrapper.sendMessage({
+      topic: TOPIC.CONNECTION,
+      action: CONNECTION_ACTIONS.ACCEPT
+    }, false);
   }
 
   /**

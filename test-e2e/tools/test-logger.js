@@ -39,7 +39,7 @@ module.exports = class Logger extends EventEmitter{
 
     switch (logLevel) {
       case 3:
-        throw new Error(`Critical error occured on deepstream ${event} ${logMessage}`)
+        // throw new Error(`Critical error occured on deepstream ${event} ${logMessage}`)
         break
       case 2:
         // console.log('Warning:', event, logMessage)

@@ -1,6 +1,6 @@
 import { EVENT, TOPIC, CONNECTION_ACTIONS, ParseResult, Message } from '../../constants'
-import * as binaryMessageBuilder from '../../../binary-protocol/src/message-builder'
-import * as binaryMessageParser from '../../../binary-protocol/src/message-parser'
+import * as messageBuilder from '../../../text-protocol/src/message-builder'
+import * as messageParser from '../../../text-protocol/src/message-parser'
 import * as uws from 'uws'
 import { EventEmitter } from 'events'
 
@@ -53,7 +53,7 @@ export class UwsSocketWrapper extends EventEmitter implements SocketWrapper {
    */
   public sendNativeMessage (message: string | Buffer, allowBuffering: boolean): void {
     if (this.isOpen) {
-      uws.native.server.send(this.external, message, uws.OPCODE_BINARY)
+      uws.native.server.send(this.external, message, uws.OPCODE_TEXT)
     }
     /*
      *if (this.config.outgoingBufferTimeout === 0) {
@@ -77,7 +77,7 @@ export class UwsSocketWrapper extends EventEmitter implements SocketWrapper {
    */
   public flush () {
     if (this.bufferedWrites !== '' && this.isOpen) {
-      uws.native.server.send(this.external, this.bufferedWrites, uws.OPCODE_BINARY)
+      uws.native.server.send(this.external, this.bufferedWrites)
       this.bufferedWrites = ''
     }
   }
@@ -90,14 +90,14 @@ export class UwsSocketWrapper extends EventEmitter implements SocketWrapper {
   public sendMessage (message: { topic: TOPIC, action: CONNECTION_ACTIONS } | Message, allowBuffering: boolean): void {
     if (this.isOpen) {
       this.sendNativeMessage(
-        binaryMessageBuilder.getMessage(message, false),
+        messageBuilder.getMessage(message, false),
         allowBuffering
       )
     }
   }
 
-  public getMessage (message: Message): Buffer {
-    return binaryMessageBuilder.getMessage(message, false)
+  public getMessage (message: Message): Buffer | string {
+    return messageBuilder.getMessage(message, false)
   }
 
   public parseMessage (message: string | ArrayBuffer): Array<ParseResult> {
@@ -110,11 +110,9 @@ export class UwsSocketWrapper extends EventEmitter implements SocketWrapper {
        */
       messageBuffer = Buffer.from(Buffer.from(message))
     } else {
-      // return textMessageParser.parse(message)
-      console.error('received string message', message)
-      return []
+      return messageParser.parse(message)
     }
-    return binaryMessageParser.parse(messageBuffer)
+    return messageParser.parse(messageBuffer)
   }
 
   /**
@@ -125,14 +123,14 @@ export class UwsSocketWrapper extends EventEmitter implements SocketWrapper {
   public sendAckMessage (message: Message, allowBuffering: boolean): void {
     if (this.isOpen) {
       this.sendNativeMessage(
-        binaryMessageBuilder.getMessage(message, true),
+        messageBuilder.getMessage(message, true),
         allowBuffering
       )
     }
   }
 
   public parseData (message: Message): true | Error {
-    return binaryMessageParser.parseData(message)
+    return messageParser.parseData(message)
   }
 
   public onMessage (messages: Array<Message>): void {
