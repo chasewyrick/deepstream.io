@@ -472,17 +472,7 @@ module.exports = class Deepstream extends EventEmitter {
     if (this._options.showLogo !== true) {
       return
     }
-  /* istanbul ignore next */
-    let logo
-
-    try {
-    const nexeres = require('nexeres') // eslint-disable-line
-      logo = nexeres.get('ascii-logo.txt').toString('ascii')
-    } catch (e) {
-      logo = fs.readFileSync(path.join(__dirname, '..', '/ascii-logo.txt'), 'utf8')
-    }
-
-  /* istanbul ignore next */
+    const logo = fs.readFileSync(path.join(__dirname, '..', '/ascii-logo.txt'), 'utf8')
     process.stdout.write(logo + EOL)
     process.stdout.write(
     ` =====================   starting   =====================${EOL}`
