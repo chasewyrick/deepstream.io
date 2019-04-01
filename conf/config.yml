@@ -105,10 +105,11 @@ connectionEndpoints:
 # Plugin Configuration
 plugins:
   # cache:
-  #   name: memcached
+#     name: redis
   #   options:
-  #     serverLocation: 'localhost:11211'
-  #
+#       host: ${REDIS_HOST}
+#       port: 6379
+
   # storage:
   #   name: rethinkdb
   #   options:
