@@ -27,7 +27,8 @@ class UwsSocketWrapper extends EventEmitter {
   constructor (websocket, handshakeData, logger, config, connectionEndpoint) {
     super()
 
-    const req = global && global.require ? global.require : require
+    // alias require to trick nexe from bundling it
+    const req = require
     this.uws = req(fileUtils.lookupLibRequirePath('uws'))
 
     this.isClosed = false
