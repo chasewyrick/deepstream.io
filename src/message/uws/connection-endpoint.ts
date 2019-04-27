@@ -74,7 +74,8 @@ export default class UWSConnectionEndpoint extends ConnectionEndpoint {
         this.onConnection(socketWrapper)
       },
       message: (ws, message) => {
-        this.connections.get(ws).onMessage(binaryMessageParser.parse(Buffer.from(message.slice())))
+        debugger
+        this.connections.get(ws).onMessage(binaryMessageParser.parse(new Uint8Array(message)))
       },
       drain: () => {
       },

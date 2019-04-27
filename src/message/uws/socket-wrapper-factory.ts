@@ -17,7 +17,7 @@ export class UwsSocketWrapper implements SocketWrapper {
   public authCallback: Function
   public authAttempts: number = 0
 
-  private bufferedWrites: Buffer[]
+  private bufferedWrites: Uint8Array[]
   private closeCallbacks: Set<Function> = new Set()
 
   public authData: object
@@ -30,6 +30,7 @@ export class UwsSocketWrapper implements SocketWrapper {
     private config: WebSocketServerConfig,
     private connectionEndpoint: SocketConnectionEndpoint
    ) {
+    this.bufferedWrites = []
   }
 
   get isOpen () {
@@ -43,7 +44,7 @@ export class UwsSocketWrapper implements SocketWrapper {
    */
   public flush () {
     if (this.bufferedWrites.length !== 0) {
-      this.socket.send(Buffer.concat(this.bufferedWrites), true)
+      this.socket.send(([] as Uint8Array[]).concat(this.bufferedWrites), true)
       this.bufferedWrites = []
     }
   }
@@ -53,11 +54,8 @@ export class UwsSocketWrapper implements SocketWrapper {
    * @param {Boolean} allowBuffering Boolean to indicate that buffering is allowed on
    *                                 this message type
    */
-  public sendMessage (message: { topic: TOPIC, action: CONNECTION_ACTIONS } | Message, allowBuffering: boolean): void {
-    this.sendBinaryMessage(
-        binaryMessageBuilder.getMessage(message, false),
-        allowBuffering
-    )
+  public sendMessage (message: { topic: TOPIC, action: CONNECTION_ACTIONS } | Message, allowBuffering: boolean = true): void {
+    this.sendBinaryMessage(binaryMessageBuilder.getMessage(message, false), allowBuffering)
   }
 
   /**
@@ -65,24 +63,24 @@ export class UwsSocketWrapper implements SocketWrapper {
    * @param {Boolean} allowBuffering Boolean to indicate that buffering is allowed on
    *                                 this message type
    */
-  public sendAckMessage (message: Message, allowBuffering: boolean): void {
+  public sendAckMessage (message: Message, allowBuffering: boolean = true): void {
     this.sendBinaryMessage(
         binaryMessageBuilder.getMessage(message, true),
         true
     )
   }
 
-  public getMessage (message: Message): Buffer {
+  public getMessage (message: Message): ArrayBuffer {
     return binaryMessageBuilder.getMessage(message, false)
   }
 
-  public parseMessage (message: ArrayBuffer): ParseResult[] {
+  public parseMessage (message: Uint8Array): ParseResult[] {
     /* we copy the underlying buffer (since a shallow reference won't be safe
      * outside of the callback)
      * the copy could be avoided if we make sure not to store references to the
      * raw buffer within the message
      */
-    return binaryMessageParser.parse(Buffer.from(Buffer.from(message)))
+    return binaryMessageParser.parse(message)
   }
 
   public parseData (message: Message): true | Error {
@@ -125,16 +123,15 @@ export class UwsSocketWrapper implements SocketWrapper {
     this.closeCallbacks.delete(callback)
   }
 
-  public sendBinaryMessage (binaryMessage: Buffer, allowBuffering: boolean) {
+  public sendBinaryMessage (message: Uint8Array, buffer?: boolean): void {
     if (this.isOpen) {
       if (this.config.outgoingBufferTimeout === 0) {
-        this.socket.send(binaryMessage, true)
-      } else if (!allowBuffering) {
+        this.socket.send(message, true)
+      } else if (!buffer) {
         this.flush()
-        this.socket.send(Buffer.concat(this.bufferedWrites), true)
-        this.bufferedWrites = []
+        this.socket.send(message, true)
       } else {
-        this.bufferedWrites.push(binaryMessage)
+        this.bufferedWrites.push(message)
         this.connectionEndpoint.scheduleFlush(this)
       }
     }

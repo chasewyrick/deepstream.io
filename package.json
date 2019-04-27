@@ -10,7 +10,7 @@
     "test": "test"
   },
   "scripts": {
-    "start": "ts-node --project tsconfig.json --files ./bin/deepstream.ts",
+    "start": "ts-node --transpile-only --project tsconfig.json --files ./bin/deepstream.ts",
     "precommit": "npm run lint",
     "tsc": "sh scripts/tsc.sh",
     "license": "mkdir -p build && node scripts/license-aggregator > build/LICENSE && cat scripts/resources/missing-licenses.txt >> build/LICENSE",

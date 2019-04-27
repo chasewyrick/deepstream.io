@@ -169,7 +169,7 @@ export default class WebsocketConnectionEndpoint extends EventEmitter implements
       return parseResult.raw
     } else if (parseResult.parseError && parseResult.parsedMessage) {
       return JSON.stringify(parseResult.parsedMessage)
-    } else if (parseResult.raw instanceof Buffer) {
+    } else if (parseResult.raw instanceof Uint8Array) {
       return JSON.stringify(parseResult.raw)
     }
     return ''

@@ -14,7 +14,7 @@ interface SimpleSocketWrapper {
   isRemote: boolean
   sendMessage (message: Message, buffer?: boolean): void
   sendAckMessage (message: Message, buffer?: boolean): void
-  sendBinaryMessage? (message: Buffer, buffer?: boolean): void
+  sendBinaryMessage? (message: Uint8Array, buffer?: boolean): void
   clientData?: object | null
 }
 
@@ -45,7 +45,7 @@ interface Message {
   isError?: boolean
   isAck?: boolean
 
-  data?: string | Buffer
+  data?: string | Uint8Array
   parsedData?: any
 
   originalTopic?: number
