@@ -1,0 +1,13 @@
+diff --git a/node_modules/turbo-json-parse/lib/ops.js b/node_modules/turbo-json-parse/lib/ops.js
+index a01ba01..e771ec6 100644
+--- a/node_modules/turbo-json-parse/lib/ops.js
++++ b/node_modules/turbo-json-parse/lib/ops.js
+@@ -15,7 +15,7 @@ function create (buffer) {
+ 
+   function stringSlice (start, end) {
+     return buffer
+-      ? 'b.utf8Slice(' + start + ', ' + end + ')'
++      ? 'b.slice(' + start + ', ' + end + ')'
+       : 's.slice(' + start + ', ' + end + ')'
+   }
+ 

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { EVENT, TOPIC } from '../constants'
+import { TOPIC } from '../constants'
 
 /**
  * This class provides a generic mechanism that allows to maintain
@@ -15,7 +15,7 @@ import { EVENT, TOPIC } from '../constants'
 export default class StateRegistry extends EventEmitter {
   private topic: TOPIC
   private options: any
-  private data: any
+  private readonly data = new Map<string, number>()
 
   /**
   * Initialises the DistributedStateRegistry and subscribes to the provided cluster topic
@@ -24,7 +24,6 @@ export default class StateRegistry extends EventEmitter {
     super()
     this.topic = topic
     this.options = options
-    this.data = {}
   }
 
   public whenReady (callback: Function): void {
@@ -34,7 +33,7 @@ export default class StateRegistry extends EventEmitter {
   * Checks if a given entry exists within the registry
   */
   public has (name: string): boolean {
-    return !!this.data[name]
+    return this.data.has(name)
   }
 
   /**
@@ -42,11 +41,12 @@ export default class StateRegistry extends EventEmitter {
   * this will notify the other nodes within the cluster
   */
   public add (name: string): void {
-    if (!this.data[name]) {
-      this.data[name] = 1
+    const current = this.data.get(name)
+    if (!current) {
+      this.data.set(name, 1)
       this.emit('add', name)
     } else {
-      this.data[name]++
+      this.data.set(name, current + 1)
     }
   }
 
@@ -60,10 +60,11 @@ export default class StateRegistry extends EventEmitter {
   * @returns {void}
   */
   public remove (name: string): void {
-    this.data[name]--
-    if (!this.data[name]) {
-      delete this.data[name]
-      this.emit('remove', name)
+    const current = this.data.get(name)! - 1
+    if (current === 0) {
+      this.data.delete(name)
+    } else {
+      this.data.set(name, current)
     }
   }
 
@@ -91,7 +92,7 @@ export default class StateRegistry extends EventEmitter {
     return Object.keys(this.data)
   }
 
-  public getAllMap (): any {
+  public getAllMap (): Map<string, number> {
     return this.data
   }
 }

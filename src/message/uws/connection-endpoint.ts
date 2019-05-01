@@ -74,7 +74,6 @@ export default class UWSConnectionEndpoint extends ConnectionEndpoint {
         this.onConnection(socketWrapper)
       },
       message: (ws, message) => {
-        debugger
         this.connections.get(ws).onMessage(binaryMessageParser.parse(new Uint8Array(message)))
       },
       drain: () => {
@@ -150,11 +149,10 @@ export default class UWSConnectionEndpoint extends ConnectionEndpoint {
     let server
     const sslParams = UWSConnectionEndpoint.getSLLParams(config)
     if (sslParams) {
-      server = new uWS.SSLApp(Object.assign(
-          {},
-          options,
-          sslParams
-      ))
+      server = new uWS.SSLApp({
+        ...options,
+        ...sslParams
+      })
     } else {
       server = new uWS.App(options)
     }

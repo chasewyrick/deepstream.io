@@ -28,7 +28,8 @@
     "e2e:http": "npm run e2e -- --tags \"not @cluster and @http\"",
     "e2e:coverage": "nyc cucumber-js test-e2e --require './test-e2e/steps/**/*.ts' --tags \"not @cluster\" --retry --exit && npm run test:coverage:combine",
     "test:all:coverage": "rm -rf .nyc_combined_coverage && npm run test:coverage && npm run e2e:coverage && nyc report --reporter=lcov -t .nyc_combined_coverage",
-    "test:coverage:combine": "mkdir -p .nyc_combined_coverage && mv -f .nyc_output/* .nyc_combined_coverage/"
+    "test:coverage:combine": "mkdir -p .nyc_combined_coverage && mv -f .nyc_output/* .nyc_combined_coverage/",
+    "postinstall": "patch-package"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "mkdirp": "^0.5.1",
     "needle": "^2.2.4",
     "source-map-support": "^0.5.11",
+    "turbo-json-parse": "^2.3.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v15.9.0"
   },
   "devDependencies": {
@@ -67,6 +69,7 @@
     "n0p3": "^1.0.2",
     "nexe": "^3",
     "nyc": "^13.3.0",
+    "patch-package": "^6.1.2",
     "proxyquire": "2.1.0",
     "sinon": "^7.3.1",
     "sinon-chai": "^3.3.0",

@@ -162,9 +162,9 @@ export class Cluster extends EventEmitter {
 
     this.server.set('cache', localCache)
 
-    if (this.enableLogging !== true) {
-      this.server.set('logger', new Logger())
-    }
+    // if (this.enableLogging !== true) {
+    //   this.server.set('logger', new Logger())
+    // }
 
     this.server.once('started', () => setTimeout(() => this.emit('started'), 500))
     this.server.once('stopped', () => setTimeout(() => this.emit('stopped'), 500))

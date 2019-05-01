@@ -2,6 +2,7 @@ import { EVENT, TOPIC, CONNECTION_ACTIONS, ParseResult, Message } from '../../co
 import * as binaryMessageBuilder from '../../../binary-protocol/src/message-builder'
 import * as binaryMessageParser from '../../../binary-protocol/src/message-parser'
 import { WebSocketServerConfig } from '../websocket/connection-endpoint'
+import {combineMultipleMessages} from '../../../binary-protocol/src/message-builder'
 
 /**
  * This class wraps around a websocket
@@ -22,6 +23,7 @@ export class UwsSocketWrapper implements SocketWrapper {
 
   public authData: object
   public clientData: object
+  private bufferedWritesTotalByteSize: number
 
   constructor (
     private socket: any,
@@ -30,6 +32,7 @@ export class UwsSocketWrapper implements SocketWrapper {
     private config: WebSocketServerConfig,
     private connectionEndpoint: SocketConnectionEndpoint
    ) {
+    this.bufferedWritesTotalByteSize = 0
     this.bufferedWrites = []
   }
 
@@ -44,7 +47,8 @@ export class UwsSocketWrapper implements SocketWrapper {
    */
   public flush () {
     if (this.bufferedWrites.length !== 0) {
-      this.socket.send(([] as Uint8Array[]).concat(this.bufferedWrites), true)
+      this.socket.send(combineMultipleMessages(this.bufferedWrites, this.bufferedWritesTotalByteSize), true)
+      this.bufferedWritesTotalByteSize = 0
       this.bufferedWrites = []
     }
   }
@@ -131,6 +135,7 @@ export class UwsSocketWrapper implements SocketWrapper {
         this.flush()
         this.socket.send(message, true)
       } else {
+        this.bufferedWritesTotalByteSize += message.length
         this.bufferedWrites.push(message)
         this.connectionEndpoint.scheduleFlush(this)
       }
